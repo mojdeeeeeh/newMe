@@ -1,0 +1,187 @@
+@extends ('layouts.app')
+
+@section ('content')
+    <div id="app">
+        <div class="card" style="width: 18rem;" v-for="profile in profiles">
+            <img class="card-img-top" :src="profile.image_url" alt="Card image cap">
+            <div class="card-body">
+                <h5 class="card-title">@{{ profile.name }}</h5>
+                <a href="#" class="btn btn-danger"  @click.prevent="deleteImage(profile)">Delete</a>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@section('scripts')
+    <script>
+        new Vue({
+            el: '#app',
+
+            data: {
+                profiles: []
+            },
+
+            mounted(){
+                this.loadData();
+            },
+
+            methods: {
+                /**
+                 * Load data
+                 */
+                loadData (){
+                    let url = '{{ route('profile.index') }}';
+
+                    axios.get(url)
+                         .then (res => this.profiles = res.data);
+                },
+
+                /**
+                 * Delete image
+                 *
+                 * @param      {<type>}  profile  The profile
+                 */
+                deleteImage(profile){
+                    let url = '{{ route('profile.destroy', '') }}/' + profile.id;
+
+                    axios.delete (url)
+                         .then (res => alert ('deleted'));
+                }
+            }
+        });
+    </script>
+@endsection
+///////////////
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Profile;
+use Illuminate\Http\Request;
+
+class ProfileController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {
+        if ($request->ajax())
+        {
+            $profiles = \App\Profile::all ();
+
+            return $profiles;
+        }
+
+        return view('profiles.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Profile  $profile
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Profile $profile)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Profile  $profile
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Profile $profile)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Profile  $profile
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, Profile $profile)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Profile  $profile
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Profile $profile)
+    {
+        $profile->deleteRecord ();
+    }
+}
+////////////////////////
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Profile extends Model
+{
+    protected $guarded = [];
+
+    public $appends = [
+        'image_url'
+    ];
+
+    /**
+     * Retrun profile image url
+     *
+     * @return     <type>  The image url attribute.
+     */
+    public function
+    getImageUrlAttribute ()
+    {
+        return \Storage::url($this->filename);
+    }
+
+
+    /**
+     * Delete record
+     */
+    public function
+    deleteRecord ()
+    {
+        \Storage::delete ($this->filename);
+
+        $this->delete ();
+
+        return true;
+    }
+}
+/////////////////
